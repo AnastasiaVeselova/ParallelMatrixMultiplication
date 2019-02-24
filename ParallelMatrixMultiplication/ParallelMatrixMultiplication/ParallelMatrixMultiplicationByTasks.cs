@@ -27,10 +27,13 @@ namespace ParallelMatrixMultiplication
             Task[] tasks = new Task[aRows];
             for (var i = 0; i < aRows; i++)
             {
+                // чтобы сразу запускать таску, можно воспользоваться Task.Factory.StartNew()
                 var multiplication = new Task(state =>
                 {
+                    // есть ещё один способ передать сюда значение: создать переменную вне этой
+                    // лямбды и здесь использовать её значение, тогда не нужно будет елать приведение
                     var j = (int)state;
-
+                    // сейчас потоки запускаются только для строк, но можно сделать ещё и для столбцов
                     for (var k = 0; k < bColumns; k++)
                     {
                         for (var m = 0; m < aColumns; m++)
