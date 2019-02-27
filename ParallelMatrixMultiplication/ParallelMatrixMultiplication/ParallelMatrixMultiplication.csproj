@@ -54,7 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ParallelMatrixMultiplicationByTasks.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="ParallelMatrixMultiplicationByTasksTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
