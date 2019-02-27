@@ -24,25 +24,29 @@ namespace ParallelMatrixMultiplication
 
             var result = new int[aRows, bColumns];
 
-            Task[] tasks = new Task[aRows];
+            var tasks = new Task[aRows * bColumns];
+
             for (var i = 0; i < aRows; i++)
             {
-                var multiplication = new Task(state =>
+                for (var j = 0; j < bColumns; j++)
                 {
-                    var j = (int)state;
+                    var k = i;
+                    var m = j;
 
-                    for (var k = 0; k < bColumns; k++)
+                    //WaitAll(tasks) - принимает массив тасков, как лучше сделать:
+                    //List<Task> перевести в массив (зачем лист, если мы знаем количетво элементов точное)
+                    //Task[aRows,bColumns] - некрасиво переводить в одномерный, делать Task[aRows][Columns] - тоже нет особого смысла
+                    //а сразу одномерный с вычислением смещения  tasks[i * bColumns + j] - как-то "по-школьному" ?
+
+                    tasks[i * bColumns + j] = Task.Factory.StartNew(() =>
                     {
-                        for (var m = 0; m < aColumns; m++)
+                        for (var n = 0; n < aColumns; n++)
                         {
-                            result[j, k] += matrixA[j, m] * matrixB[m, k];
+                            result[k, m] += matrixA[k, n] * matrixB[n, m];
                         }
-                    }
-                },
-                i);
 
-                tasks[i] = multiplication;
-                tasks[i].Start();
+                    });
+                }
             }
 
             Task.WaitAll(tasks);
