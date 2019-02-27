@@ -24,37 +24,36 @@ namespace ParallelMatrixMultiplication
 
             var result = new int[aRows, bColumns];
 
-            var tasks = new Task[aRows * bColumns];
+            var rowTasks = new Task[aRows];
 
             for (var i = 0; i < aRows; i++)
             {
-                // сейчас потоки запускаются только для строк, но можно сделать ещё и для столбцов
-                for (var j = 0; j < bColumns; j++)
+                // есть ещё один способ передать сюда значение: создать переменную вне этой
+                // лямбды и здесь использовать её значение, тогда не нужно будет делать приведение
+                var k = i;
+                // чтобы сразу запускать таску, можно воспользоваться Task.Factory.StartNew()    
+                rowTasks[i] = Task.Factory.StartNew(() =>
                 {
-                    // есть ещё один способ передать сюда значение: создать переменную вне этой
-                    // лямбды и здесь использовать её значение, тогда не нужно будет делать приведение
-                  
-                    var k = i;
-                    var m = j;
+                    var columnTasks = new Task[bColumns];
 
-                    // чтобы сразу запускать таску, можно воспользоваться Task.Factory.StartNew()               
-                  
-                    //WaitAll(tasks) - принимает массив тасков, как лучше сделать:
-                    //List<Task> перевести в массив (зачем лист, если мы знаем количетво элементов точное)
-                    //Task[aRows,bColumns] - некрасиво переводить в одномерный, делать Task[aRows][Columns] - тоже нет особого смысла
-                    //а сразу одномерный с вычислением смещения  tasks[i * bColumns + j] - как-то "по-школьному" ?
-                    
-                    tasks[i * bColumns + j] = Task.Factory.StartNew(() =>
-                    {
-                        for (var n = 0; n < aColumns; n++)
+                    for (var j = 0; j < bColumns; j++)
+                    {                   
+                        var m = j;
+                      
+                        // сейчас потоки запускаются только для строк, но можно сделать ещё и для столбцов
+                        columnTasks[j] = Task.Factory.StartNew(() =>
                         {
-                            result[k, m] += matrixA[k, n] * matrixB[n, m];
-                        }
-                    });
-                }
+                            for (var n = 0; n < aColumns; n++)
+                            {
+                                result[k, m] += matrixA[k, n] * matrixB[n, m];
+                            }
+                        });
+                    }
+                    Task.WaitAll(columnTasks);
+                });
             }
 
-            Task.WaitAll(tasks);
+            Task.WaitAll(rowTasks);
             return result;
         }
     }
